@@ -29,7 +29,7 @@
 ```
 zhenxun_bot-2026/           # 真寻Bot 主目录
 ├── watchdog_freeze.py      # 核心守护程序（本文件）
-├── 启动与管理.bat          # Bot 启动脚本（被守护程序调用）
+├── 启动防僵死守护.bat          # Bot 启动脚本（被守护程序调用）
 ├── log/                    # Bot 日志目录（监控目标）
 │   └── *.log
 ├── data/
