@@ -29,10 +29,10 @@
 ```
 zhenxun_bot-2026/           # 真寻Bot 主目录
 ├── watchdog_freeze.py      # 核心守护程序（本文件）
-├── 启动防僵死守护.bat          # Bot 启动脚本（被守护程序调用）
-├── log/                    # Bot 日志目录（监控目标）
-│   └── *.log
-├── data/
+├── 启动与管理.bat          # Bot 启动脚本（被守护程序调用）
+├── 启动防僵死守护.bat      # 守护程序启动脚本（用户双击运行）
+├── log/                    # 日志目录
+│   ├── *.log               # Bot 运行日志（监控目标）
 │   └── watchdog_freeze.log # 守护程序自身日志
 └── ...
 ```
@@ -44,29 +44,29 @@ zhenxun_bot-2026/           # 真寻Bot 主目录
 在 `watchdog_freeze.py` 顶部修改以下常量：
 
 ```python
-# ========== 用户配置区 ==========
-
-BOT_DIR = r"D:\桌面\qqai\zhenxun_bot-2026"   # 真寻Bot 主目录路径
+#==============配置=============================================================
+BOT_DIR = r"D:\zhenxun_bot-2026"          # 真寻Bot 主目录的绝对路径
 START_BAT = os.path.join(BOT_DIR, "启动与管理.bat")  # Bot 启动脚本路径
-LOG_DIR = os.path.join(BOT_DIR, "log")                # 日志监控目录
-LOG_PATTERN = "*.log"                                   # 日志文件匹配模式
+LOG_DIR = os.path.join(BOT_DIR, "log")    # 监控的日志目录
+LOG_PATTERN = "*.log"                        # 日志文件匹配模式
+CHECK_INTERVAL = 300                         # 检测间隔（秒）
+FREEZE_THRESHOLD = 1800                        # 僵死判定阈值（秒）
 
-CHECK_INTERVAL = 300      # 检测间隔（秒），默认 5 分钟
-FREEZE_THRESHOLD = 1800   # 僵死判定阈值（秒），默认 30 分钟
-
-# ========== 以下一般无需修改 ==========
-WATCHDOG_LOG = os.path.join(BOT_DIR, "data", "watchdog_freeze.log")  # 守护日志路径
-PROJECT_MARKER = "zhenxun_bot-2026"  # 项目标识，用于进程识别
+WATCHDOG_LOG = os.path.join(BOT_DIR, "log", "watchdog_freeze.log")  # 守护日志路径
+MY_PID = os.getpid()
+PROJECT_MARKER = "zhenxun_bot-2026"          # 项目标识，用于进程识别
 ```
 
 | 配置项 | 默认值 | 说明 |
 |--------|--------|------|
-| `BOT_DIR` | — | 真寻Bot 主目录的**绝对路径** |
+| `BOT_DIR` | `r"D:\zhenxun_bot-2026"` | 真寻Bot 主目录的**绝对路径** |
 | `START_BAT` | `BOT_DIR\启动与管理.bat` | Bot 启动脚本路径 |
 | `LOG_DIR` | `BOT_DIR\log` | 监控的日志目录 |
 | `LOG_PATTERN` | `*.log` | 日志文件通配符 |
-| `CHECK_INTERVAL` | `300` | 检测间隔（秒） |
-| `FREEZE_THRESHOLD` | `1800` | 僵死判定阈值（秒） |
+| `CHECK_INTERVAL` | `300` | 检测间隔（秒），默认 5 分钟 |
+| `FREEZE_THRESHOLD` | `1800` | 僵死判定阈值（秒），默认 30 分钟 |
+| `WATCHDOG_LOG` | `BOT_DIR\log\watchdog_freeze.log` | 守护程序自身日志路径 |
+| `PROJECT_MARKER` | `zhenxun_bot-2026` | 项目标识，用于识别属于本项目的进程 |
 
 ---
 
@@ -80,21 +80,26 @@ PROJECT_MARKER = "zhenxun_bot-2026"  # 项目标识，用于进程识别
 BOT_DIR = r"D:\你的\实际\路径\zhenxun_bot-2026"
 ```
 
-### 2. 安装依赖
+### 2. 启动守护（推荐方式）
 
-```bash
-pip install psutil
+双击运行 `启动防僵死守护.bat`：
+
+```bat
+@echo off
+title Watchdog
+cd /d "D:\zhenxun_bot-2026"
+"Python310\python.exe" watchdog_freeze.py
+pause
 ```
 
-> 注：代码中主要使用标准库（`os`, `time`, `glob`, `subprocess`, `ctypes`, `datetime`），`psutil` 为可选增强。
+> **注意**：请根据你的 Python 安装路径修改 `"Python310\python.exe"`，或使用系统环境变量中的 `python`。
 
-### 3. 启动守护
+### 3. 命令行启动（备用）
 
 ```bash
+cd /d D:\zhenxun_bot-2026
 python watchdog_freeze.py
 ```
-
-或使用 `.bat` 脚本包装后双击运行。
 
 ---
 
@@ -189,7 +194,7 @@ python watchdog_freeze.py
 [2026-05-23 13:18:00] [KILL] 发现 1 个进程: [67890]
 [2026-05-23 13:18:03] [KILL] 已关闭窗口 PID=67890 标题=真寻Bot 综合管理控制台 路径=...\zhenxun_bot-2026\...
 [2026-05-23 13:18:05] [KILL] 清理完成
-[2026-05-23 13:18:05] [START] 启动: D:\桌面\qqai\zhenxun_bot-2026\启动与管理.bat
+[2026-05-23 13:18:05] [START] 启动: D:\zhenxun_bot-2026\启动与管理.bat
 [2026-05-23 13:18:05] [START] 已发送 os.startfile
 [2026-05-23 13:18:25] [START] 等待 20 秒...
 [2026-05-23 13:18:30] [START] 启动成功，第1次检测到进程: [98765]
@@ -199,11 +204,14 @@ python watchdog_freeze.py
 
 ## 🐛 常见问题
 
+**Q: 双击 `启动防僵死守护.bat` 后闪退？**  
+A: 检查 `Python310\python.exe` 路径是否正确。建议改为系统环境变量中的 `python`，或填写 Python 的绝对路径如 `C:\Users\你的用户名\AppData\Local\Programs\Python\Python310\python.exe`。
+
 **Q: 守护程序提示"未找到 Bot 进程"？**  
 A: 检查 `BOT_DIR` 路径是否正确，以及 `PROJECT_MARKER` 是否与实际目录名一致。
 
 **Q: 僵死后没有自动重启？**  
-A: 查看 `data/watchdog_freeze.log`，确认清理步骤是否完成。如果"30秒内仍有残留"，可能是进程无法强制结束，需手动检查。
+A: 查看 `log/watchdog_freeze.log`，确认清理步骤是否完成。如果"30秒内仍有残留"，可能是进程无法强制结束，需手动检查。
 
 **Q: 能否同时守护多个 Bot 实例？**  
 A: 可以复制多份 `watchdog_freeze.py`，分别配置不同的 `BOT_DIR` 和 `WATCHDOG_LOG` 路径。
