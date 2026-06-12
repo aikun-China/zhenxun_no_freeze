@@ -4,15 +4,15 @@ import glob
 import subprocess
 import ctypes
 from datetime import datetime
-#配置（文件要分享，就配置项加个注释)
-BOT_DIR = r"D:\桌面\qqai\zhenxun_bot-2026"#文件位置
-START_BAT = os.path.join(BOT_DIR, "启动与管理.bat")#bot启动项
-LOG_DIR = os.path.join(BOT_DIR, "log")#检测文件夹
+#==============配置=============================================================
+BOT_DIR = r"D:\zhenxun_bot-2026"#真寻Bot 主目录的绝对路径
+START_BAT = os.path.join(BOT_DIR, "启动与管理.bat")#Bot 启动脚本路径
+LOG_DIR = os.path.join(BOT_DIR, "log")#监控的日志目录
 LOG_PATTERN = "*.log"#文件
-CHECK_INTERVAL = 300 #间隔
-FREEZE_THRESHOLD = 1800 #阈值
+CHECK_INTERVAL = 300 #间隔（s)
+FREEZE_THRESHOLD = 1800 #阈值(S)
 
-WATCHDOG_LOG = os.path.join(BOT_DIR, "data", "watchdog_freeze.log")
+WATCHDOG_LOG = os.path.join(BOT_DIR, "log", "watchdog_freeze.log")#日志
 MY_PID = os.getpid()
 PROJECT_MARKER = "zhenxun_bot-2026"
 
